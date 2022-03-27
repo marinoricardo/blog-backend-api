@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\UserController;
 use Illuminate\Http\Request;
@@ -21,3 +22,4 @@ use Illuminate\Support\Facades\Route;
 // });
 Route::resource('categories', CategoryController::class);
 Route::resource('users', UserController::class);
+Route::post('login', [AuthController::class, 'login']);
