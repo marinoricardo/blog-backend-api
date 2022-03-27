@@ -3,10 +3,16 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\CommentJob;
+use App\Mail\Commentario;
+use App\Mail\OrderShipped;
+use App\Models\Article;
 use App\Models\Comment;
+use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class CommentController extends Controller
 {
@@ -14,7 +20,6 @@ class CommentController extends Controller
     public function __construct(Comment $comment)
     {
         $this->comment = $comment;
-
     }
     /**
      * Display a listing of the resource.
@@ -43,12 +48,22 @@ class CommentController extends Controller
         DB::beginTransaction();
 
         try {
+
+            // dd($user_email);
             $comment = new Comment();
             $comment->comment = $request->comment;
             $comment->article_id = $request->article_id;
             $comment->save();
 
+            $article_id = Article::Find($request->article_id);
+            $user = User::find($article_id)->first();
+            $user_email = $user->email;
+
             DB::commit();
+            // CommentJob::dispatch($user_email, $comment->comment, $article_id)->delay(now()->addSeconds(10));
+            $data = array('name'=>"Virat Gandhi");
+            Mail::to([$user_email])->send(new OrderShipped($request->comment));
+
             return response()->json(['message' => 'Comment saved successfully']);
         } catch (Exception $e) {
             DB::rollBack();
