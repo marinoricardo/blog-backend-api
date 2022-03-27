@@ -15,4 +15,12 @@ class Comment extends Model
         'article_id'
 
     ];
+
+    // public function author(){
+    //     return $this->belongsTo(User::class);
+    // }
+
+    public function article(){
+        return $this->belongsTo(Article::class);
+    }
 }

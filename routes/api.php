@@ -3,6 +3,7 @@
 use App\Http\Controllers\API\ArticleController;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CategoryController;
+use App\Http\Controllers\API\CommentController;
 use App\Http\Controllers\API\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 Route::resource('articles', ArticleController::class);
+Route::resource('comments', CommentController::class);
 Route::resource('categories', CategoryController::class);
 Route::resource('users', UserController::class);
 Route::post('login', [AuthController::class, 'login']);

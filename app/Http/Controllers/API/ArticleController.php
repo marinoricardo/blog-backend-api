@@ -24,7 +24,7 @@ class ArticleController extends Controller
      */
     public function index()
     {
-        $articles = $this->articles->with('category')->paginate(10);
+        $articles = $this->articles->with(['category', 'comments', 'author'])->paginate(10);
         return response()->json(['data' => $articles, 'message' => "Articles retrieved successfully"]);
     }
 
