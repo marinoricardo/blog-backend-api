@@ -50,11 +50,10 @@ class UserController extends Controller
 
             DB::commit();
             return response()->json(['message' => 'User saved successfully']);
-        } catch (Exception $e) { 
+        } catch (Exception $e) {
             DB::rollBack();
             return response()->json([$e]);
         }
-        
     }
 
     /**
@@ -65,7 +64,13 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        //
+        $user = $this->user->find($id);
+        if (empty($user)) {
+            DB::rollBack();
+            return response()->json(['message' => "User not found"]);
+        } else {
+            return response()->json(['data' => $user, 'message' => "User retrieved successfully"]);
+        }
     }
 
     /**
@@ -77,7 +82,31 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required'
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $user = $this->user->find($id);
+            if (empty($user)) {
+
+                DB::rollBack();
+                return response()->json(['message' => "User not found"]);
+            } else {
+                $user->name = $request->name;
+                $user->email = $request->email;
+                $user->update();
+
+                DB::commit();
+                return response()->json(['message' => 'User updated successfully']);
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([$e]);
+        }
     }
 
     /**
@@ -88,6 +117,24 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
-        //
+        DB::beginTransaction();
+
+        try {
+            $user = $this->user->find($id);
+            if (empty($user)) {
+
+                DB::rollBack();
+                return response()->json(['message' => "User not found"]);
+            } else {
+                $user->delete();
+
+                DB::commit();
+                return response()->json(['message' => 'User removed successfully']);
+            }
+            
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([$e]);
+        }
     }
 }
