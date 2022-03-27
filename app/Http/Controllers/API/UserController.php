@@ -4,7 +4,9 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -32,7 +34,27 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required'
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $user = new User();
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->password = bcrypt('password');
+            $user->save();
+
+            DB::commit();
+            return response()->json(['message' => 'User saved successfully']);
+        } catch (Exception $e) { 
+            DB::rollBack();
+            return response()->json([$e]);
+        }
+        
     }
 
     /**
