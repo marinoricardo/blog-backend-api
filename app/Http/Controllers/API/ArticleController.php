@@ -75,7 +75,12 @@ class ArticleController extends Controller
      */
     public function show($id)
     {
-        //
+        $articles = $this->articles->find($id);
+        if (empty($articles)) {
+            return response()->json(['message' => "Articles not found"]);
+        } else {
+            return response()->json(['data' => $articles, 'message' => "Articles retrieved successfully"]);
+        }
     }
 
     /**
@@ -87,7 +92,35 @@ class ArticleController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'title' => 'required',
+            'body' => 'required',
+            'category_id' => 'required'
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $articles = Article::where('id',$id)->where('author_id',Auth::user()->id)->first();
+            $articles->title = $request->title;
+            $articles->body = $request->body;
+            $articles->category_id = $request->category_id;
+            $articles->author_id = Auth::user()->id;
+            if($request->file('image')==NULL){
+                $articles->image='placeholder.png';
+            }else{ 
+                $filename=Str::random(20) . '.' . $request->file('image')->getClientOriginalExtension();
+                $articles->image=$filename;
+                $request->image->move(public_path('images'),$filename);
+            }
+            $articles->save();
+
+            DB::commit();
+            return response()->json(['message' => 'Articles update successfully']);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([$e]);
+        }
     }
 
     /**
@@ -98,6 +131,24 @@ class ArticleController extends Controller
      */
     public function destroy($id)
     {
-        //
+        DB::beginTransaction();
+
+        try {
+            $articles = $this->articles->find($id);
+            if (empty($articles)) {
+
+                DB::rollBack();
+                return response()->json(['message' => "Articles not found"]);
+            } else {
+                $articles->delete();
+
+                DB::commit();
+                return response()->json(['message' => 'Articles removed successfully']);
+            }
+            
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([$e]);
+        }
     }
 }
